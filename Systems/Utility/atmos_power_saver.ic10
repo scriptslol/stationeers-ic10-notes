@@ -1,0 +1,41 @@
+alias gasInputInfo d0
+alias liquidInputInfo d1
+
+alias haveLiquidInputs r1
+alias haveGasInputs r2
+
+#define AllLiquidAnalyzers -2113838091
+#define AllGasAnalyzers 435685051
+define AllFiltrationDevices -348054045
+define AllTurboLiquidPumps -1051805505
+
+loop:
+yield
+
+jal checkLiquid
+jal checkGas
+
+sleep 5
+j loop
+
+
+checkLiquid:
+l r0 liquidInputInfo Pressure
+select r0 r0 1 0
+beq r0 haveLiquidInputs ra
+move haveLiquidInputs r0
+
+sb AllTurboLiquidPumps On haveLiquidInputs
+
+j ra
+
+
+checkGas:
+l r0 gasInputInfo Pressure
+select r0 r0 1 0
+beq r0 haveGasInputs ra
+move haveGasInputs r0
+
+sb AllFiltrationDevices On haveGasInputs
+
+j ra

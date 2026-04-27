@@ -1,0 +1,39 @@
+####################################################
+# HVAC Sleeper Filtration
+####################################################
+alias regulator d0
+
+define hSleeperVert -1300059018
+define hSleeperHorzR -1812330717
+define hSleeperHorzL 1213495833
+
+define TargetkPa 101
+
+alias activeSleepers r1
+
+
+loop:
+move activeSleepers 0
+
+lb r0 hSleeperVert On Maximum
+breq r0 ninf 2
+add activeSleepers activeSleepers r0
+lb r0 hSleeperHorzR On Maximum
+breq r0 ninf 2
+add activeSleepers activeSleepers r0
+lb r0 hSleeperHorzL On Maximum
+breq r0 ninf 2
+add activeSleepers activeSleepers r0
+
+# clamp to 0-1
+sgtz r0 activeSleepers
+s db Setting activeSleepers
+#s db Setting r0
+
+s regulator Setting TargetkPa
+s regulator On r0
+s db Mode r0
+
+sleep 5
+
+j loop

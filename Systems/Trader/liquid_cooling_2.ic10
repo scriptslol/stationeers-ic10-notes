@@ -1,0 +1,56 @@
+alias OutflowValve d0
+alias InflowPump d1
+alias InflowInfo d2
+alias SystemInfo d3
+#define OutflowValve -1280984102
+#define InflowPump 1310794736
+#define InflowInfo 435685051
+#define SystemInfo 272136332
+
+alias temp r1
+alias tooHot r2
+alias inflowOpen r3
+alias outflowOpen r4
+
+define targetTemp 293  # ~20c
+
+
+loop:
+jal updateInfo
+jal updateSystem
+j loop
+
+
+#---------------------------------------------------
+updateInfo:
+
+# check system temperature
+#lb temp SystemInfo Temperature Average
+l temp SystemInfo Temperature
+#s db Setting temp
+
+# check inflow pressure
+#lb r0 InflowInfo Pressure Average
+l r0 InflowInfo Pressure
+
+# determine if the inflow pump should be on
+sgtz inflowOpen r0
+
+# determine if the system is too hot
+sgt tooHot temp targetTemp
+
+# determine if the outflow value is open
+nor outflowOpen inflowOpen tooHot # if (!inflowOpen && !tooHot)
+
+j ra
+
+
+#---------------------------------------------------
+updateSystem:
+
+s InflowPump On inflowOpen
+s OutflowValve On outflowOpen
+#sb InflowPump On inflowOpen
+#sb OutflowValve On outflowOpen
+
+j ra

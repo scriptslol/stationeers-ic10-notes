@@ -1,0 +1,91 @@
+#
+# (WIP) HVAC Cooling Tower 1
+#  Manages hot/cold water for neutralizing
+#  the temp of an input gas pipe.
+#
+# NOTE: need to fixup how we're tracking hot/cold backend control
+#       and frontend control needs
+#
+alias isHeating r1
+alias isCooling r2
+alias isSunVisible r3
+alias hotTemp r4
+alias coldTemp r5
+alias hotAngle r6
+alias coldAngle r7
+alias currentTemp r8
+
+define targetColdTemp 283 # 10c
+define targetHotTemp 353 # 80c
+
+define SensorT 1076425094
+define ValveT -517628750
+define GasInfoT 435685051
+define LiquidInfoT -2113838091
+define RadiatorT -566775170
+
+define HotRadiatorNorth HASH("HOT_NORTH")
+define HotRadiatorSouth HASH("HOT_SOUTH")
+
+define ColdRadiatorNorth HASH("COLD_NORTH")
+define ColdRadiatorSouth HASH("COLD_SOUTH")
+
+define HotInfo HASH("HOT_INFO")
+define ColdInfo HASH("COLD_INFO")
+
+define HotValve HASH("HOT_VALVE")
+define ColdValve HASH("COLD_VALVE")
+
+
+loop:
+jal poll
+jal update
+j loop
+
+
+poll:
+
+# check if sun is visible...
+lb r0 SensorT SolarIrradiance Average
+sgtz isSunVisible r0
+
+# update target radiator angles...
+lb r0 SensorT Horizontal Average
+move hotAngle r0
+add coldAngle r0 90 # perpendicular to the sun...
+
+# update temperatures...
+lbn hotTemp LiquidInfoT HotInfo Temperature Average
+lbn coldTemp LiquidInfoT ColdInfo Temperature Average
+
+#lb currentTemp GasInfoT Temperature Average
+#slt r0 currentTemp maxTemp
+#and isHeating isSunVisible r0
+
+j ra
+
+
+update:
+
+# update north radiators...
+sbn RadiatorT ColdRadiatorNorth Horizontal coldAngle
+sbn RadiatorT HotRadiatorNorth Horizontal hotAngle
+
+# update south radiators...
+mul r0 coldAngle -1
+sbn RadiatorT ColdRadiatorSouth Horizontal r0
+mul r0 hotAngle -1
+sbn RadiatorT HotRadiatorSouth Horizontal r0
+
+# update radiator open/close states...
+#sbn RadiatorT HotRadiatorNorth Open isHeating
+#sbn RadiatorT HotRadiatorSouth Open isHeating
+#sbn RadiatorT ColdRadiatorNorth Open isCooling
+#sbn RadiatorT ColdRadiatorSouth Open isCooling
+
+# update mixer state...
+#sbn ValveT HotValve Open isHeating
+#mul r0 isHeating -1 # flip the value to avoid having both valves open
+#sbn ValveT ColdValve Open r0
+
+j ra

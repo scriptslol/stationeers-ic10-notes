@@ -1,0 +1,68 @@
+####################################################
+#
+####################################################
+alias Memory d0
+
+define hHarvie 958056199
+define hTray -1841632400
+
+
+alias itemCount r2
+alias itemSize r3
+alias currentHarvie r4
+alias currentTray r5
+
+# load memory's stack pointer
+l r0 Memory Setting
+
+# load the size of each item
+sub r0 r0 1
+get itemSize Memory r0
+
+# decrement pointer and fetch total item count
+sub r0 r0 1
+get itemCount Memory r0
+
+loop:
+jal runChecks
+sleep 5
+j loop
+
+
+#---------------------------------------------------
+runChecks:
+alias index r15
+move index 0
+for:
+get currentHarvie Memory index
+add r0 index 1
+get currentTray Memory r0
+j check
+postCheck:
+add index index itemSize
+s db Setting index
+bge index itemCount end
+j for
+end:
+j ra
+
+
+#---------------------------------------------------
+check:
+
+lbns r0 hTray currentTray 0 Mature Average
+
+sbn hHarvie currentHarvie On r0
+
+beq r0 0 postCheck # if not mature, return to loop
+
+yield
+
+lbn r0 hHarvie currentHarvie Activate Average
+
+bgtz r0 postCheck
+
+sbn hHarvie currentHarvie Harvest 1
+
+yield
+j postCheck

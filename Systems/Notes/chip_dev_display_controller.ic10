@@ -1,0 +1,69 @@
+####################################################
+#
+####################################################
+define Dial 554524804
+define Memory -851746783
+define Monitor 801677497
+define Switch 321604921
+define SLED -815193061
+define MLED 0
+define LLED 0
+
+alias selected r1
+
+alias m1 r10
+alias m2 r11
+alias m3 r12
+alias m4 r13
+alias m5 r14
+alias m6 r15
+
+
+loop:
+lbn r0 Switch HASH("Toggle") Setting Average
+sb SLED On r0
+beq r0 0 loop
+lbn selected Dial HASH("MSelect") Setting Average
+beqal selected 0 loadA
+beqal selected 1 loadB
+jal show
+j loop
+
+
+loadA:
+lbn m1 Memory HASH("M1a") Setting Average
+lbn m2 Memory HASH("M2a") Setting Average
+lbn m3 Memory HASH("M3a") Setting Average
+lbn m4 Memory HASH("M4a") Setting Average
+lbn m5 Memory HASH("M5a") Setting Average
+lbn m6 Memory HASH("M6a") Setting Average
+j ra
+
+
+loadB:
+lbn m1 Memory HASH("M1b") Setting Average
+lbn m2 Memory HASH("M2b") Setting Average
+lbn m3 Memory HASH("M3b") Setting Average
+lbn m4 Memory HASH("M4b") Setting Average
+lbn m5 Memory HASH("M5b") Setting Average
+lbn m6 Memory HASH("M6b") Setting Average
+j ra
+
+
+show:
+
+#sbn Monitor HASH("D1") Setting m1
+#sbn Monitor HASH("D2") Setting m2
+#sbn Monitor HASH("D3") Setting m3
+#sbn Monitor HASH("D4") Setting m4
+#sbn Monitor HASH("D5") Setting m5
+#sbn Monitor HASH("D6") Setting m6
+
+sbn SLED HASH("D1") Setting m1
+sbn SLED HASH("D2") Setting m2
+sbn SLED HASH("D3") Setting m3
+sbn SLED HASH("D4") Setting m4
+sbn SLED HASH("D5") Setting m5
+sbn SLED HASH("D6") Setting m6
+
+j ra

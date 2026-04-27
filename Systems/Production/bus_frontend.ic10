@@ -1,0 +1,119 @@
+####################################################
+# Bus Frontend Module
+####################################################
+
+# Types
+define hDisplayS -815193061
+define hDisplayM -53151617
+define hDisplayL -1949054743
+define hConsole1 235638270
+define hConsole2 801677497
+define hConsole3 -722284333
+define hLEDLight 1944485013
+define hMemory -851746783
+define hButton 491845673
+define hOccupancySensor 322782515
+#define hProximitySensor 568800213
+define hLever HASH("StructureLogicSwitch")
+define hDial HASH("StructureLogicDial")
+
+# Entities
+define HashDial HASH("HASH_SELECT")
+define CountDial HASH("COUNT_SET")
+define RequestButton HASH("REQUEST")
+define CountLED HASH("COUNT_LED")
+define CountMem HASH("COUNT")
+define HashMem HASH("HASH")
+define TargetMem HASH("TARGET")
+
+# Vars
+alias size r1
+alias sizeof r2
+alias length r3
+alias selectedHash r4
+alias targetCount r5
+
+
+#---------------------------------------------------
+setup:
+clr db
+# 1) Hash
+# <Values[Hash]>
+# BASIC INGOTS
+push HASH("ItemIronIngot")
+push HASH("ItemCopperIngot")
+push HASH("ItemGoldIngot")
+push HASH("ItemSiliconIngot")
+push HASH("ItemSilverIngot")
+push HASH("ItemNickelIngot")
+push HASH("ItemLeadIngot")
+push HASH("ItemSolidFuel")
+# ALLOYS
+push HASH("ItemSteelIngot")
+push HASH("ItemElectrumIngot")
+push HASH("ItemSolderIngot")
+push HASH("ItemInvarIngot")
+push HASH("ItemConstantanIngot")
+# SUPER ALLOYS
+push HASH("ItemAstroloyIngot")
+push HASH("ItemInconelIngot")
+push HASH("ItemStelliteIngot")
+push HASH("ItemWaspaloyIngot")
+push HASH("ItemHastelloyIngot")
+# </Values[Hash]>
+move size sp
+move sizeof 1
+div length size sizeof
+sub length length 1
+sbn hDial HashDial Mode length
+sbn hDial CountDial Mode 500
+
+
+#---------------------------------------------------
+loop:
+jal checkDials
+jal updateDisplay
+jal updateCycle
+j loop
+
+#---------------------------------------------------
+checkDials:
+alias index r15
+move index -1
+lbn index hDial HashDial Setting Maximum
+beq index ninf ra
+mul index index sizeof
+get selectedHash db index
+sbn hMemory HashMem Setting selectedHash
+
+lbn targetCount hDial CountDial Setting Sum
+sbn hMemory TargetMem Setting targetCount
+j ra
+
+
+#---------------------------------------------------
+updateDisplay:
+sbn hDisplayS CountLED Setting targetCount
+bltz index ra
+brltz index 3
+s db Setting selectedHash
+j ra
+s db Setting 0
+j ra
+#sbn hDisplay CropDisplay Setting cropHash
+#j ra
+
+
+#---------------------------------------------------
+updateCycle:
+lbn r0 hButton RequestButton Activate Average
+beqzal r0 ra
+sbn hButton RequestButton Lock 1
+
+lbn r0 hMemory CountMem Setting Sum
+add r0 r0 targetCount
+
+sbn hMemory CountMem Setting r0
+sleep 1
+sbn hButton RequestButton Lock 0
+j ra

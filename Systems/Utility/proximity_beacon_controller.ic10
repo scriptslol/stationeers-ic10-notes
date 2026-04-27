@@ -1,0 +1,13 @@
+
+define hProximitySensor 568800213
+define hBeacon -188177083
+
+
+loop:
+
+lb r0 hProximitySensor Activate Minimum
+select r0 r0 0 1
+sb hBeacon On r0
+
+#sleep 10
+j loop

@@ -1,0 +1,115 @@
+####################################################
+# Grow Light Controller v2
+# + Introduces crop selection via a dial
+# + Optional support for selected hash display
+####################################################
+
+# Types
+define hGrowLight HASH("StructureGrowLight")
+define hLever HASH("StructureLogicSwitch")
+define hDial HASH("StructureLogicDial")
+define hDisplay HASH("StructureConsole")
+
+# Entities
+define GrowLever HASH("GROW")
+define CropDial HASH("CROP")
+define CropDisplay HASH("CROP_DISPLAY")
+
+# Vars
+alias size r1
+alias sizeof r2
+alias length r3
+alias cropHash r4
+alias cropLightTime r5
+alias cropSleepTime r6
+
+
+
+#---------------------------------------------------
+setup:
+clr db
+# CropModel
+# 1) Hash
+# 2) LightTime
+# 3) SleepTime
+# <Crops[CropModel]>
+push HASH("ItemPotato")
+push 600 # 10:00
+push 200 # 3:20
+push HASH("ItemSoybean")
+push 600 # 10:00
+push 300 # 5:00
+push HASH("ItemWheat")
+push 600 # 10:00
+push 300 # 5:00
+push HASH("ItemTomato")
+push 480 # 8:00
+push 300 # 5:00
+push HASH("ItemSugarCane")
+push 500 # 8:20
+push 200 # 3:20
+push HASH("ItemCocoaTree")
+push 500 # 8:20
+push 200 # 3:20
+# </Crops[CropModel]>
+move size sp
+move sizeof 3
+div length size sizeof
+# the following is only necessary if this memory is accessed externally...
+#push sp # sizeof(Crops[CropModel])
+#push 3 # sizeof(CropModel)
+sub r0 length 1
+sbn hDial CropDial Mode r0
+sbn hDial CropDial Setting 0
+
+
+#---------------------------------------------------
+loop:
+jal checkDial
+jal updateDisplay
+jal updateCycle
+j loop
+
+
+#---------------------------------------------------
+checkDial:
+alias index r15
+move index -1
+lbn index hDial CropDial Setting Maximum
+beq index ninf ra
+mul index index sizeof
+get cropHash db index
+add index index 1
+get cropLightTime db index
+add index index 1
+get cropSleepTime db index
+j ra
+
+
+#---------------------------------------------------
+updateDisplay:
+bltz index ra
+brltz index 3
+s db Setting cropHash
+j ra
+s db Setting 0
+j ra
+#sbn hDisplay CropDisplay Setting cropHash
+#j ra
+
+
+#---------------------------------------------------
+updateCycle:
+bltz index ra
+lbn r0 hLever GrowLever Open Maximum
+beqz r0 ra
+
+sb hGrowLight On 1
+sleep cropLightTime
+
+lbn r0 hLever GrowLever Open Maximum
+beqz r0 ra
+
+sb hGrowLight On 0
+sleep cropSleepTime
+j ra

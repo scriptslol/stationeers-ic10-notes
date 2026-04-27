@@ -1,0 +1,66 @@
+####################################################
+# Furnace Waste Reclamation Controller
+# see: Graphs/furnace_waste_reclamation.drawio
+####################################################
+
+define hGasTank 272136332
+define hPoweredVent -785498334
+define hGasAnalyzer 435685051
+define hDigitalValve -1280984102
+
+define ToCold HASH("TO_COLD")
+define FromCold HASH("FROM_COLD")
+define ToStorage HASH("TO_STORAGE")
+define WasteTank HASH("WASTE_TANK")
+define ColdPurgeVent HASH("COLD_PURGE_VENT")
+define PurgeInfo HASH("PURGE_INFO")
+
+define TargetTemp 308  # 35
+
+alias isCool r1
+alias isHot r2
+alias isFlushing r3
+alias canPurge r4
+
+
+#---------------------------------------------------
+loop:
+s db Setting TargetTemp
+jal checkTemp
+jal updateDevices
+jal updateFiltration
+jal updateDisplays
+j loop
+
+
+#---------------------------------------------------
+checkTemp:
+lbn r0 hGasTank WasteTank Temperature Sum
+slt isCool r0 TargetTemp
+snez isHot isCool
+sne isHot isCool 1
+
+lbn r0 hGasAnalyzer PurgeInfo TotalMoles Sum
+sgtz r0 r0
+and isFlushing isCool r0
+j ra
+
+
+#---------------------------------------------------
+updateDevices:
+sbn hDigitalValve ToCold On isHot
+sbn hDigitalValve FromCold On isHot
+sbn hDigitalValve ToStorage On isCool
+sbn hPoweredVent ColdPurgeVent On isFlushing
+j ra
+
+
+#---------------------------------------------------
+updateFiltration:
+yield
+j ra
+
+
+#---------------------------------------------------
+updateDisplays:
+j ra

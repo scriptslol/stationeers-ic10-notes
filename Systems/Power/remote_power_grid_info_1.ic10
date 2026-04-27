@@ -1,0 +1,83 @@
+####################################################
+# Remote Power Grid Info 2
+####################################################
+# Devices
+alias GridUptimeRelay d0 #(transmitter)
+alias GridSupplyRelay d1 #(transmitter)
+alias GridDemandRelay d2 #(transmitter)
+# Types
+define hSmallLED -815193061
+define hMediumLED -53151617
+define hLargeLED -1949054743
+# Entities
+define SupplyLED HASH("SUPPLY_LED")
+define DemandLED HASH("DEMAND_LED")
+define HoursLED HASH("HoursLED")
+define MinsLED HASH("MinsLED")
+define SecsLED HASH("SecsLED")
+# Vars
+alias gridUptime r2
+alias supplyWatts r3
+alias demandWatts r4
+
+
+setup:
+sbn hSmallLED HoursLED Mode 0
+sbn hSmallLED MinsLED Mode 0
+sbn hSmallLED SecsLED Mode 0
+sbn hMediumLED HoursLED Mode 0
+sbn hMediumLED MinsLED Mode 0
+sbn hMediumLED SecsLED Mode 0
+sbn hLargeLED HoursLED Mode 0
+sbn hLargeLED MinsLED Mode 0
+sbn hLargeLED SecsLED Mode 0
+sbn hSmallLED SupplyLED Color 5
+sbn hSmallLED SupplyLED Mode 2
+sbn hSmallLED DemandLED Mode 2
+
+
+loop:
+sleep 1
+jal updateTime
+jal updateInfo
+j loop
+
+
+updateTime:
+# calculate hours
+l gridUptime GridUptimeRelay Setting
+div r0 gridUptime 3600
+trunc r0 r0
+sbn hSmallLED HoursLED Setting r0
+sbn hMediumLED HoursLED Setting r0
+sbn hLargeLED HoursLED Setting r0
+
+# calculate mins
+div r0 gridUptime 60
+trunc r0 r0
+mod r0 r0 60
+sbn hSmallLED MinsLED Setting r0
+sbn hMediumLED MinsLED Setting r0
+sbn hLargeLED MinsLED Setting r0
+
+# calculate secs
+mod r0 gridUptime 60
+#round r0 r0
+sbn hSmallLED SecsLED Setting r0
+sbn hMediumLED SecsLED Setting r0
+sbn hLargeLED SecsLED Setting r0
+j ra
+
+
+updateInfo:
+l supplyWatts GridSupplyRelay Setting
+sbn hSmallLED SupplyLED Setting supplyWatts
+
+l demandWatts GridDemandRelay Setting
+sbn hSmallLED DemandLED Setting demandWatts
+
+# calculate if we're trending up or down
+slt r0 demandWatts supplyWatts
+select r0 r0 2 4
+sbn hSmallLED DemandLED Color r0
+j ra

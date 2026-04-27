@@ -1,0 +1,42 @@
+####################################################
+# Hydroponics Memory
+####################################################
+# defines the complete working set of harvies/trays
+#
+# Template Stack Loader
+#   sp = index * sizeof(model)
+#   sp += items=max(sizeof(model))
+#   pop... items
+# Model:
+# 1 - Harvie ID
+# 2 - Tray ID
+
+#push HASH("HARVIE_")
+#push HASH("TRAY_")
+
+push HASH("HARVIE_1")
+push HASH("TRAY_1")
+
+push HASH("HARVIE_2")
+push HASH("TRAY_2")
+
+push HASH("HARVIE_3")
+push HASH("TRAY_3")
+
+push HASH("HARVIE_4")
+push HASH("TRAY_4")
+
+push HASH("HARVIE_5")
+push HASH("TRAY_5")
+
+push HASH("HARVIE_6")
+push HASH("TRAY_6")
+
+####################################################
+
+push sp
+push 2
+
+####################################################
+
+s db Setting sp

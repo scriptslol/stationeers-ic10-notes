@@ -1,0 +1,41 @@
+###Perfect Solar Tracking###
+##By  ThePez##
+define DaylightSensor 1076425094
+#Sensordirection is the angle your daylight sensor's
+#data port is facing
+#Panneldirection is the angle your solar pannel's:
+#Power/data port for single port pannels
+#Power port for dual port pannels
+define sensordirection 0
+define paneldirection 270
+#Regesters
+alias vangle r14
+alias hangle r15
+#Batch Labels for all solar pannel types
+define Panel -2045627372
+define PanelDual -539224550
+define Heavy -934345724
+define HeavyDual -1545574413
+#Main Loop
+start:
+yield
+#Loading Variable from Sensor
+lb vangle DaylightSensor Vertical 3
+lb hangle DaylightSensor Horizontal 3
+#Horizontal Angle Calcs
+sub r0 sensordirection paneldirection
+sub r0 r0 90
+add r0 hangle r0
+#Vertical Angle Calcs
+sub r1 90 vangle
+#Batch Command to set horizontal angle to pannels
+sb Panel Horizontal r0
+sb PanelDual Horizontal r0
+sb Heavy Horizontal r0
+sb HeavyDual Horizontal r0
+#Batch Command to set vertical angle to pannels
+sb Panel Vertical r1
+sb PanelDual Vertical r1
+sb Heavy Vertical r1
+sb HeavyDual Vertical r1
+j start

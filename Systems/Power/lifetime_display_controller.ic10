@@ -1,0 +1,37 @@
+####################################################
+# Lifetime Display Controller
+####################################################
+alias Lifetime d0 #(logic memory)
+alias UNUSED1 d1
+alias UNUSED2 d2
+alias HoursLED d3 #(display)
+alias MinsLED d4 #(display)
+alias SecsLED d5 #(display)
+
+
+loop:
+sleep 1
+jal updateTime
+j loop
+
+
+updateTime:
+
+# calculate hours
+l r2 Lifetime Setting
+div r0 r2 3600
+trunc r0 r0
+s HoursLED Setting r0
+
+# calculate mins
+div r0 r2 60
+trunc r0 r0
+mod r0 r0 60
+s MinsLED Setting r0
+
+# calculate secs
+mod r0 r2 60
+#round r0 r0
+s SecsLED Setting r0
+
+j ra

@@ -1,0 +1,34 @@
+####################################################
+# Progress Bar Controller
+####################################################
+alias Value d0  #(logic memory)
+alias Max d1  #(logic memory)
+alias powerLED d2  #(display)
+alias Bar d3  #(diode slide light)
+alias UNUSED4 d4
+alias UNUSED5 d5
+
+alias powerRatio r4
+alias segmentRatio r5
+
+
+loop:
+sleep 1
+jal updateBars
+jal updateDisplays
+j loop
+
+
+updateBars:
+l r1 Available Setting
+l r2 Capacity Setting
+div powerRatio r1 r2
+s Bar Setting powerRatio
+j ra
+
+
+updateDisplays:
+s powerLED Setting powerRatio
+s powerLED Mode 1
+s powerLED Color 6
+j ra

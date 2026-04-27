@@ -1,0 +1,93 @@
+####################################################
+# Trader Gas/Liquid Output Manager
+# - gasses > 25c diverted to cooling network
+# - liquids > 30c diverted to cooling network
+####################################################
+alias gasColdValve d0
+alias gasHotValve d1
+alias gasInfo d2
+alias liquidColdValve d3
+alias liquidHotValve d4
+alias liquidInfo d5
+
+define K 273.15
+define GasMinTemp 25
+define LiquidMinTemp 30
+
+alias p r1
+alias active r2
+alias gasGood r3
+alias liquidGood r4
+alias gasMinTemp r5
+alias liquidMinTemp r6
+
+
+add gasMinTemp GasMinTemp K
+add liquidMinTemp LiquidMinTemp K
+
+move gasGood 0
+move liquidGood 0
+
+#===================================================
+loop:
+move p 0
+jal checkGas
+jal checkLiquid
+sgt active p 0
+jal updateGas
+jal updateLiquid
+jal hibernate
+j loop
+
+
+#---------------------------------------------------
+checkGas:
+l r0 gasInfo Pressure
+add p p r0
+blt p 0 ra
+#s db Setting 999
+l r0 gasInfo Temperature
+slt gasGood r0 gasMinTemp
+and gasGood gasGood p
+#s db Setting p
+j ra
+
+
+#---------------------------------------------------
+checkLiquid:
+l r0 liquidInfo Pressure
+add p p r0
+blt p 0 ra
+l r0 liquidInfo Temperature
+slt liquidGood r0 liquidMinTemp
+and liquidGood liquidGood p
+j ra
+
+
+#---------------------------------------------------
+updateGas:
+#beq p 0 ra
+s gasColdValve On gasGood
+seq r0 gasGood 0 # if not good, set 1 (open hot)
+and r0 r0 p # if hot open AND there's p...
+s gasHotValve On r0
+j ra
+
+
+#---------------------------------------------------
+updateLiquid:
+#beq p 0 ra
+s liquidColdValve On gasGood
+seq r0 liquidGood 0
+and r0 r0 p # if hot open AND there's p...
+s liquidHotValve On r0
+j ra
+
+
+#---------------------------------------------------
+# check if the module should rest
+hibernate:
+# if there's any input, go back to loop
+bgt p 0 ra
+sleep 10
+j ra

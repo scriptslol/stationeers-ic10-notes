@@ -1,0 +1,13 @@
+####################################################
+# Filtration Safety Controller
+####################################################
+
+define PressureLimit 30000 # 30MPa
+
+loop:
+
+l r0 db PressureOutput
+slt r0 r0 PressureLimit
+s db Mode r0
+
+j loop

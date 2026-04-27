@@ -1,0 +1,29 @@
+alias dishA d0
+alias dishASwitch d1
+alias dishASignal d2
+
+alias dishB d3
+alias dishBSwitch d4
+alias dishBSignal d5
+
+
+loop:
+jal updateDishA
+jal updateDishB
+j loop
+
+
+updateDishA:
+l r0 dishASwitch Open
+s dishA On r0
+l r0 dishA SignalStrength
+s dishASignal Setting r0
+j ra
+
+
+updateDishB:
+l r0 dishBSwitch Open
+s dishB On r0
+l r0 dishB SignalStrength
+s dishBSignal Setting r0
+j ra

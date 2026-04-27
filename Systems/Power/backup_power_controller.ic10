@@ -1,0 +1,77 @@
+####################################################
+# Backup Power Controller
+####################################################
+alias powerCapacity d0
+alias powerAvailable d1
+alias powerRequestSignal d2
+#alias coalSilo d2
+#alias areaLight d3
+#alias indictorLight d4
+#alias coalCountLED d5
+
+alias Capacity r1
+alias Available r2
+alias StorageRatio r3
+alias ChargingUp r4
+
+define StartRatio 0.2
+define StopRatio 0.8
+
+define AllSolidGenerators 813146305
+
+
+loop:
+jal updateStorageRatio
+jal updateGeneratorState
+#jal updateIndicators
+s db Setting ChargingUp
+s powerRequestSignal Setting ChargingUp
+
+sleep 5
+j loop
+
+
+updateStorageRatio:
+l Capacity powerCapacity Setting
+l Available powerAvailable Setting
+div StorageRatio Available Capacity
+j ra
+
+
+updateGeneratorState:
+# check if we need to stop
+sge r0 StorageRatio StopRatio
+and r0 ChargingUp r0
+beq r0 1 stopGenerators
+
+# check if we need to start
+slt r0 StorageRatio StartRatio
+beq r0 1 startGenerators
+j ra
+
+
+stopGenerators:
+sb AllSolidGenerators On 0
+move ChargingUp 0
+j ra
+
+
+startGenerators:
+sb AllSolidGenerators On 1
+move ChargingUp 1
+j ra
+
+
+updateIndicators:
+s areaLight On ChargingUp
+s indictorLight On 1
+
+slt r5 StorageRatio StopRatio
+select r0 r5 5 -1 # default to blue, yellow if 'low'
+select r0 ChargingUp 4 r0 # red if charging
+s indictorLight Color r0
+
+l r0 coalSilo Quantity
+s coalCountLED Setting r0
+
+j ra

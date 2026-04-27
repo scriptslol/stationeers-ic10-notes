@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>133486805816950796</DateTime>
+  <GameVersion>0.2.4677.21598</GameVersion>
+  <Title>Farm Automation 1</Title>
+  <Description>3 harvies / 3 pods​</Description>
+  <Author>Scriptslol</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions>####################################################
+# Planter Automation Controller
+####################################################
+
+alias plants1 d0
+alias plants2 d1
+alias plants3 d2
+alias harvie1 d3
+alias harvie2 d4
+alias harvie3 d5
+
+loop:
+jal check1
+jal check2
+jal check3
+j loop
+
+
+#---------------------------------------------------
+check1:
+yield
+ls r0 plants1 0 Mature
+s harvie1 On r0
+beq r0 0 ra # if not mature, return to loop
+l r0 harvie1 Activate
+#beq r0 1 ra # if already active, return to loop
+bgtz r0 ra #this approach attempts to avoid lock bug
+s harvie1 Harvest 1 # made it here? begin harvest
+yield
+j ra
+
+
+#---------------------------------------------------
+check2:
+yield
+ls r0 plants2 0 Mature
+s harvie2 On r0
+beq r0 0 ra
+l r0 harvie2 Activate
+#beq r0 1 ra
+bgtz r0 ra
+s harvie2 Harvest 1
+yield
+j ra
+
+
+#---------------------------------------------------
+check3:
+yield
+ls r0 plants3 0 Mature
+s harvie3 On r0
+beq r0 0 ra
+l r0 harvie3 Activate
+#beq r0 1 ra
+bgtz r0 ra
+s harvie3 Harvest 1
+yield
+j ra</Instructions>
+</InstructionData>

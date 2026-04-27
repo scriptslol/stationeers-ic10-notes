@@ -1,0 +1,78 @@
+####################################################
+# Memory Controller
+####################################################
+alias GenInfo d0  #(cable analyzer)
+alias StoreInfo d1  #(cable analyzer)
+alias UNUSED d2
+alias AvailableMemory d3  #(logic memory)
+alias CapacityMemory d4  #(logic memory)
+alias LifetimeMemory d5  #(logic memory)
+
+alias powerIn r1           # generated watts
+alias powerStored r2       # stored watts
+alias powerDemand r3       # consumed watts
+alias powerCapacity r4     # watt storage capacity
+alias powerLifetimeSecs r5 # remaining battery time
+
+define AllLargeBatteries -1388288459
+define AllSmallBatteries -400115994
+
+
+loop:
+sleep 1
+jal readGenInfo
+jal readStoreInfo
+jal readGrid
+jal saveValues
+j loop
+
+
+readGenInfo:
+l powerIn GenInfo PowerActual # generated watts
+j ra
+
+
+readStoreInfo:
+l powerStored StoreInfo PowerPotential # stored
+l powerDemand StoreInfo PowerRequired  # demand
+
+div r0 powerStored powerDemand
+div r0 r0 2
+round powerLifetimeSecs r0
+# save this value in shared memory?
+# or,
+# write it out to displays?
+j ra
+
+
+readGrid:
+# re-calculate the storage capacity
+move powerCapacity 0
+lb r0 AllLargeBatteries Maximum Sum
+add powerCapacity powerCapacity r0
+lb r0 AllSmallBatteries Maximum Sum
+add powerCapacity powerCapacity r0
+
+j ra
+
+
+saveValues:
+s AvailableMemory Setting powerStored
+s CapacityMemory Setting powerCapacity
+s LifetimeMemory Setting powerLifetimeSecs
+j ra
+
+
+updateGridChargePercent:
+s DisplayB Mode 2
+div availablePower availablePower 1000
+s DisplayB Setting availablePower
+
+s DisplayC Mode 2
+div totalCapacity totalCapacity 1000
+s DisplayC Setting totalCapacity
+
+div r0 availablePower totalCapacity
+s GridCharge Setting r0
+
+j ra

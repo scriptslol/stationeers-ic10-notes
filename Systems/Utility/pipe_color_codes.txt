@@ -1,0 +1,8 @@
+PIPE COLORS
+<align=left>
+Green.........Clean
+Gray............Dirty
+Brown....Coolant
+White.........Input
+Orange..........Mix
+</align>320

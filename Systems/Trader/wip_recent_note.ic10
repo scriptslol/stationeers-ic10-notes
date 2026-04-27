@@ -1,0 +1,76 @@
+####################################################
+# Comms Controller
+####################################################
+
+define hDials 554524804
+define hLever 1220484876
+#define hButton 491845673
+define hButton 1668452680 # "Important Button"
+define hRadar 439026183
+define hMDisplay -53151617
+
+define Horz HASH("HORZ")
+define Vert HASH("VERT")
+define HorzTarget HASH("HORZ_TARGET")
+define VertTarget HASH("VERT_TARGET")
+define PowerLever HASH("POWER")
+define ResetBtn HASH("RESET")
+
+define DefaultHorz 45
+define DefaultVert 45
+
+
+setup:
+sbn hDials Horz Mode 90
+sbn hDials Vert Mode 90
+yield
+jal doReset
+
+
+loop:
+jal checkRest
+jal checkPower
+jal updateControls
+jal updateDisplay
+yield
+j loop
+
+
+doReset:
+sbn hDials Horz Setting DefaultHorz
+sbn hDials Vert Setting DefaultVert
+sbn hLever PowerLever Open 1
+yield
+j ra
+
+
+checkPower:
+lbn r0 hLever PowerLever Open Sum
+sb hRadar On r0
+j ra
+
+
+checkRest:
+lbn r0 hButton ResetBtn Activate Sum
+bgtzal r0 doReset
+j ra
+
+
+updateControls:
+lbn r0 hDials Horz Setting Average
+sb hRadar Horizontal r0
+lbn r0 hDials Vert Setting Average
+sb hRadar Vertical r0
+j ra
+
+
+updateDisplay:
+lb r0 hRadar Horizontal Average
+sbn hMDisplay Horz Setting r0
+lbn r0 hDials Horz Setting Average
+sbn hMDisplay HorzTarget Setting r0
+lb r0 hRadar Vertical Average
+sbn hMDisplay Vert Setting r0
+lbn r0 hDials Vert Setting Average
+sbn hMDisplay VertTarget Setting r0
+j ra

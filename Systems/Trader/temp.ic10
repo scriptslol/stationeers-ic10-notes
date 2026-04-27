@@ -1,0 +1,42 @@
+####################################################
+# Comms Controller
+####################################################
+
+define hDials 554524804
+define hLever 1220484876
+#define hButton 491845673
+define hButton 1668452680 # "Important Button"
+define hRadar 439026183
+
+define Horz HASH("HORZ")
+define Vert HASH("VERT")
+define ResetBtn HASH("RESET")
+define PowerLever HASH("POWER")
+
+define DefaultHorz 45
+define DefaultVert 45
+
+
+loop:
+
+lbn r0 hButton ResetBtn Activate Sum
+sbn hLever PowerLever Open r0
+s db Setting r0
+bgtzal r0 doReset
+
+lbn r0 hDials Horz Setting Average
+sb hRadar Horizontal r0
+
+lbn r0 hDials Vert Setting Average
+sb hRadar Vertical r0
+
+yield
+
+j loop
+
+
+doReset:
+sbn hDials Horz Setting DefaultHorz
+sbn hDials Vert Setting DefaultVert
+yield
+j ra

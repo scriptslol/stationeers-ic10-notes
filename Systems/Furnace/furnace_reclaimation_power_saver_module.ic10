@@ -1,0 +1,72 @@
+####################################################
+# Power Saver Module 1
+####################################################
+
+# Types
+define hDisplayS -815193061
+define hDisplayM -53151617
+define hDisplayL -1949054743
+define hConsole1 235638270
+define hConsole2 801677497
+define hConsole3 -722284333
+define hLEDLight 1944485013
+
+define hOccupancySensor 322782515
+#define hProximitySensor 568800213
+
+# Entities
+#...
+
+# Vars
+alias powerEnabled r1
+
+# Vars
+alias size r1
+alias sizeof r2
+alias length r3
+
+
+#---------------------------------------------------
+setup:
+clr db
+# 1) Hash
+# <Values[Hash]>
+push -815193061 # hDisplayS
+push -53151617 # hDisplayM
+push -1949054743 # hDisplayL
+push 235638270 # hConsole1
+push 801677497 # hConsole2
+push -722284333 # hConsole3
+push 1944485013 # hLEDLight
+# </Values[Hash]>
+move size sp
+move sizeof 1
+div length size sizeof
+
+
+#---------------------------------------------------
+loop:
+jal poll
+jal update
+sleep 1
+j loop
+
+
+#---------------------------------------------------
+poll:
+lb powerEnabled hOccupancySensor Activate Sum
+j ra
+
+
+#---------------------------------------------------
+update:
+alias index r15
+move index 0
+for:
+get r0 db index
+sb r0 On powerEnabled
+add index index sizeof
+bge index size end
+j for
+end:
+j ra

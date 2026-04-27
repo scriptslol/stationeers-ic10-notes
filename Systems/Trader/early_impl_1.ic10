@@ -1,0 +1,29 @@
+alias leftRightDial d0
+alias upDownDial d1
+alias dishOne d2
+alias dishTwo d3
+alias dishThree d4
+alias dishFour d5
+
+define AllDishes 439026183
+define ResetButton 1668452680
+
+
+loop:
+
+lb r0 ResetButton Activate Average
+beqal r0 1 resetInputs
+
+l r0 leftRightDial Setting
+sb AllDishes Horizontal r0
+
+l r0 upDownDial Setting
+sb AllDishes Vertical r0
+
+j loop
+
+
+resetInputs:
+s leftRightDial Setting 0
+s upDownDial Setting 45
+j ra

@@ -1,0 +1,24 @@
+
+
+alias furnace d0
+alias flushLight d1
+
+alias isOn r1
+alias isFlushing r2
+
+define FlushMin 50
+
+loop:
+
+l isOn furnace On
+l r0 furnace SettingOutput
+
+# flushing is true when output >= FlushMin
+sge isFlushing r0 FlushMin
+
+# notify when on/flushing
+and r0 isOn isFlushing
+
+s flushLight On r0
+
+j loop

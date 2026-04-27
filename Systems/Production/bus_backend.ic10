@@ -1,0 +1,99 @@
+#Vending machine item exporter
+alias rTemp r0
+alias rTemp2 r1
+alias rBusy r2
+alias rReqHash r9
+alias rReqCount r10
+alias rMaxUnitStack r11
+alias rStackerCount r12
+alias rStackerSetting r13
+
+alias dVender d0
+alias dStacker d1
+alias dSorter d2
+alias dMemHash d3
+alias dMemCount d4
+#alias dStartExport d5
+
+main:
+yield
+l rBusy dMemCount Setting
+beqz rBusy main
+l rBusy dMemHash Setting
+beqz rBusy main
+jal _Configuration
+l rReqCount dMemCount Setting
+l rReqHash dMemHash Setting
+s dMemCount Setting 0
+jal _ExportItem
+j main
+
+_Configuration:
+s dSorter Mode 0
+s dStacker Mode 1
+s dStacker ClearMemory 1
+s dSorter ClearMemory 1
+s dVender ClearMemory 1
+j ra
+
+_ExportItem:
+push ra
+ExportItemLoop:
+ls rTemp dStacker 2 Quantity
+s dVender RequestHash rReqHash
+#wait for item to arrive
+ls rTemp2 dStacker 2 Quantity
+breq rTemp rTemp2 -1
+ls rStackerCount dStacker 2 Quantity
+ls rMaxUnitStack dStacker 2 MaxQuantity
+jal _WaitForDevices
+min rStackerSetting rReqCount rMaxUnitStack
+min rStackerSetting rStackerSetting rStackerCount
+breq rStackerCount rMaxUnitStack 2
+bgt rReqCount rStackerCount ExportItemLoop
+s dStacker Setting rStackerSetting
+s dSorter Output 0
+jal _RunStacker
+ls rStackerCount dStacker 2 Quantity
+sub rReqCount rReqCount rStackerSetting
+bgtz rReqCount ExportItemLoop
+#done, route any leftovers to the vender
+beqz rStackerCount ExportItemExit
+s dStacker Setting rStackerCount
+s dSorter Output 1
+jal _RunStacker
+ExportItemExit:
+pop ra
+j ra
+
+_RunStacker:
+push ra
+l rTemp dSorter ImportCount
+s dStacker Output 1
+#wait for item to arrive
+l rTemp2 dSorter ImportCount
+breq rTemp rTemp2 -1
+jal _WaitForDevices
+pop ra
+j ra
+
+_WaitForDevices:
+yield
+ls rBusy dSorter 0 Occupied
+bgtz rBusy _WaitForDevices
+ls rBusy dSorter 1 Occupied
+bgtz rBusy _WaitForDevices
+ls rBusy dSorter 2 Occupied
+bgtz rBusy _WaitForDevices
+ls rBusy dVender 0 Occupied
+bgtz rBusy _WaitForDevices
+ls rBusy dVender 1 Occupied
+bgtz rBusy _WaitForDevices
+#if the stacker is full so we skip it
+beq rStackerCount rMaxUnitStack WaitEnd
+ls rBusy dStacker 0 Occupied
+bgtz rBusy _WaitForDevices
+ls rBusy dStacker 1 Occupied
+bgtz rBusy _WaitForDevices
+WaitEnd:
+j ra

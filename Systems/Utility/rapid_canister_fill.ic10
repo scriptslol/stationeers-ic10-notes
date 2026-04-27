@@ -1,0 +1,19 @@
+####################################################
+# Rapid canister fill
+####################################################
+
+alias TurbPump d0
+alias PipeInfo d1
+
+define TargetPressure 19000 # 19MPa
+
+
+loop:
+
+l r0 PipeInfo Pressure
+s db Setting r0
+sgt r0 TargetPressure r0
+s TurbPump On r0
+s TurbPump Setting 1000
+
+j loop

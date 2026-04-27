@@ -1,0 +1,56 @@
+####################################################
+# Furnace Waste Reclamation Info
+####################################################
+
+# Types
+define hGasTank 272136332
+define hGasInfo 435685051
+define hDisplayM -53151617
+define hDisplayS -815193061
+define hLEDLight 1944485013
+
+# Entities
+define ColdInInfo HASH("COLD_IN")
+define ColdOutInfo HASH("COLD_OUT")
+define WasteInfo HASH("WASTE_TANK")
+define StoredInfo HASH("STORE_INFO")
+define ColdMolesLED HASH("COLD_MOLES")
+define TotalMolesLED HASH("TOTAL_MOLES")
+define InputMolesLED HASH("INPUT_MOLES")
+define StoredMolesLED HASH("STORED_MOLES")
+
+# Vars
+alias inputMoles r1
+alias coldMoles r2
+alias storedMoles r3
+alias totalMoles r4
+
+
+#---------------------------------------------------
+loop:
+jal poll
+jal updateDisplay
+j loop
+
+
+#---------------------------------------------------
+poll:
+lbn inputMoles hGasTank WasteInfo TotalMoles 0
+move totalMoles inputMoles
+lbn storedMoles hGasInfo StoredInfo TotalMoles 0
+add totalMoles totalMoles storedMoles
+lbn r0 hGasInfo ColdInInfo TotalMoles 0
+move coldMoles r0
+lbn r0 hGasInfo ColdOutInfo TotalMoles 0
+add coldMoles coldMoles r0
+add totalMoles totalMoles coldMoles
+j ra
+
+
+#---------------------------------------------------
+updateDisplay:
+sbn hDisplayS TotalMolesLED Setting totalMoles
+sbn hDisplayM InputMolesLED Setting inputMoles
+sbn hDisplayM ColdMolesLED Setting coldMoles
+sbn hDisplayM StoredMolesLED Setting storedMoles
+j ra

@@ -1,0 +1,79 @@
+####################################################
+# Centrifuge Aux Controller (Turbo)
+####################################################
+alias turbo d0
+alias shutdown d1
+alias release d2
+alias rpmLED d3
+alias startupController d4
+
+
+define AllThings 1238905683
+define AllStirlingEngines -260316435
+
+define MinRpmForPower 1000
+define MinTurboSwitchOverRpm 975
+
+
+loop:
+
+# check if turbo requested
+l r0 turbo Activate
+beq r0 1 applyTurbo
+
+# check if shutdown requested
+l r0 shutdown Activate
+beq r0 1 doShutdown
+
+jal checkRelease
+jal checkEngines
+#jal checkAutoTurbo
+
+jal updateRpmLED
+
+j loop
+
+
+#---------------------------------------------------
+applyTurbo:
+sb AllThings Throttle 100
+sb AllThings CombustionLimiter 100
+j ra
+
+
+#---------------------------------------------------
+doShutdown:
+sb AllThings On 0
+j ra
+
+
+#---------------------------------------------------
+checkRelease:
+l r0 release Open
+sb AllThings Open r0
+j ra
+
+
+#---------------------------------------------------
+checkEngines:
+lb r0 AllThings Rpm Average
+sge r0 r0 MinRpmForPower
+sb AllStirlingEngines On r0
+j ra
+
+
+#---------------------------------------------------
+checkAutoTurbo:
+lb r0 AllThings On Average
+beq r0 0 ra # when turned off, skip turbo migration
+lb r0 AllThings Rpm Average
+sge r0 r0 MinTurboSwitchOverRpm
+s turbo Activate r0 # simulate pressing turbo button
+j ra
+
+
+#---------------------------------------------------
+updateRpmLED:
+lb r0 AllThings Rpm Average
+s rpmLED Setting r0
+j ra

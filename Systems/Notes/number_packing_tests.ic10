@@ -1,0 +1,44 @@
+####################################################
+# Packing Tests
+####################################################
+define Dial 554524804
+define ValueA HASH("VALUE_A")
+define ValueB HASH("VALUE_B")
+define ValueC HASH("VALUE_C")
+define Memory -851746783
+define Packed HASH("MEMORY_1")
+define SLED -815193061
+define MLED 0
+define LLED 0
+
+alias a r1
+alias b r2
+alias c r3
+alias p r4
+
+
+loop:
+
+jal poll
+jal pack
+
+j loop
+
+
+poll:
+lbn a Dial ValueA Setting Average
+lbn b Dial ValueB Setting Average
+lbn c Dial ValueC Setting Average
+j ra
+
+
+pack:
+sll p a 2
+sbn Memory HASH("Memory 2") Setting p
+sll p p 9
+sbn Memory HASH("Memory 3") Setting p
+or p p b
+sbn Memory HASH("Memory 4") Setting p
+
+#sbn Memory HASH("Memory 1") Setting p
+j ra

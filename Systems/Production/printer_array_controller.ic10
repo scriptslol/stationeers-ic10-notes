@@ -1,0 +1,65 @@
+
+define hDial HASH("StructureLogicDial")
+define hLever HASH("StructureLogicSwitch")
+define hButton HASH("StructureLogicButton")
+define hHashMem HASH("StructureLogicHashGen")
+
+define PrinterDial HASH("PRINTER")
+define SelectedHash HASH("HASH")
+define CraftButton HASH("CRAFT")
+define EjectLever HASH("EMPTY")
+
+# Vars
+alias size r1
+alias sizeof r2
+alias length r3
+alias selectedHash r4
+alias selectedPrinter r5
+
+setup:
+clr db
+# 1) Hash
+# <Values[Hash]>
+# BASIC INGOTS
+push HASH("StructureAutolathe")
+push HASH("StructureHydraulicPipeBender")
+push HASH("StructureElectronicsPrinter")
+push HASH("StructureToolManufactory")
+push HASH("StructureRocketManufactory")
+push HASH("StructureSecurityPrinter")
+# </Values[Hash]>
+move size sp
+move sizeof 1
+div length size sizeof
+sub length length 1
+sbn hDial PrinterDial Mode 5
+
+loop:
+yield
+jal checkDials
+jal updateRecipe
+jal checkCraft
+j loop
+
+
+checkDials:
+sb HASH("StructureAutolathe") On 0
+sb HASH("StructureHydraulicPipeBender") On 0
+sb HASH("StructureElectronicsPrinter") On 0
+
+alias index r15
+move index -1
+lbn index hDial PrinterDial Setting Maximum
+beq index ninf ra
+mul index index sizeof
+get selectedPrinter db index
+sb selectedPrinter On 1
+j ra
+
+updateRecipe:
+lbn r0 hHashMem SelectedHash Setting Sum
+sb selectedPrinter RecipeHash r0
+j ra
+
+checkCraft:
+j ra

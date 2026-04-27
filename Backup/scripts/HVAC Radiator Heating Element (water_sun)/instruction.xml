@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>133486811765723679</DateTime>
+  <GameVersion>0.2.4677.21598</GameVersion>
+  <Title>HVAC Radiator Heating Element (water_sun)</Title>
+  <Description>​</Description>
+  <Author>Scriptslol</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions>####################################################
+# HVAC Radiator Heating Element (water/sun)
+####################################################
+alias heatPumpIn d0
+alias heatPumpOut d1
+alias hotPipeAna d2
+alias radiator d3
+alias sunSensor d4
+
+alias isHeating r1
+alias isSunVisible r2
+alias currentTemp r3
+
+define maxTemp 353 # 80c
+define LiquidTanks 608607718
+
+
+loop:
+
+lb currentTemp LiquidTanks Temperature Average
+
+jal updateRadiator
+
+j loop
+
+
+updateRadiator:
+
+l r0 sunSensor SolarIrradiance
+sgtz isSunVisible r0
+
+slt r0 currentTemp maxTemp
+
+and isHeating isSunVisible r0
+
+s radiator Open isHeating
+l r0 sunSensor Horizontal
+s radiator Horizontal r0
+
+s heatPumpIn On isHeating
+s heatPumpOut On isHeating
+
+j ra</Instructions>
+</InstructionData>

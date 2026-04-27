@@ -1,0 +1,93 @@
+####################################################
+# Storm Radar Controller 1
+####################################################
+
+alias MuteToggle d0 # optional
+alias TestTime d1
+
+define hMemory -851746783
+define hLights 1592905386
+define hStation 1997212478
+define hSmallLED -815193061
+define hLargeLED -1949054743
+define hSpeakers -828056979
+define hHazardLight -1535893860
+define hLightSensor 1076425094
+define hTransmitter -693235651
+define hProximitySensor 568800213
+define hBeacon -188177083
+
+define WeatherEventSignal HASH("Next_Weather_Event")
+
+alias eventTime r1
+alias isStorm r2
+alias isClear r3
+alias isDark r4
+alias isMute r5
+alias isAway r6
+
+
+loop:
+
+jal poll
+jal updateAlert
+jal updateBeacon
+
+j loop
+
+
+poll:
+move eventTime 0
+# update current weather event time
+lb eventTime hStation NextWeatherEventTime Average
+brdns d1 3
+l r0 d1 Setting # load the debug eventTime from d1
+add eventTime eventTime r0
+trunc eventTime eventTime
+snez isStorm eventTime
+#seq isClear isStorm 0
+lb r0 hStation Mode Average
+seq isClear r0 0
+
+# transmit eventTime
+sbn hTransmitter WeatherEventSignal Setting eventTime
+
+# determine if we're in darkness
+lb r0 hLightSensor SolarIrradiance Average
+seqz isDark r0
+
+# determine klaxon mute state
+move isMute 0 # muted, by default
+brdns MuteToggle 2
+l isMute MuteToggle Open
+j ra
+
+
+updateAlert:
+# enable hzard lights when storm approaching
+sb hHazardLight On isStorm
+sne r0 isMute 1
+and r0 isStorm r0 # if( isStorm && !isMute )
+sb hSpeakers On r0
+
+# display time until storm
+sb hLargeLED On isStorm
+sb hLargeLED Setting eventTime
+sb hSmallLED On isStorm
+sb hSmallLED Setting eventTime
+
+# enable lights when dark
+sb hLights On isDark
+
+and r0 isClear isMute
+breqz r0 3
+brdns MuteToggle 2
+s MuteToggle Open 0
+j ra
+
+
+updateBeacon:
+lb r0 hProximitySensor Activate Minimum
+select r0 r0 0 1
+sb hBeacon On r0
+j ra

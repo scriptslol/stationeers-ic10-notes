@@ -1,0 +1,128 @@
+####################################################
+# HVAC Room Controller 4
+# + cycles atmosphere until room temp matches HVAC's target temp.
+# + maintains target pressure of room (~101 kpa)
+# + Supports: Active Vent and Small/Large Powered Vent
+# REQUIRES:
+#  * Global Device named "HVAC Thermostat"
+#      (stores target temp setting, in celcius)
+#  * Input Air Vents named "VENT_IN"
+#      (fills room with conditioned air)
+#  * Output Air Vents named "VENT_OUT"
+#      (cycles air back into HVAC for conditioning)
+# TODO:
+#  * Convert HVACMode/Device to use named/typed reference
+# SETTING:
+#  * (DEBUG) temp difference between hvac target temp / current room temp
+####################################################
+
+alias HVACMode d0 # optional
+
+define OfflineMode 0
+define NormalMode 1
+define VaccumMode 2
+define TargetPressure 101 # 101 kpa
+define K 273.15
+
+define MitterT -693235651
+define SensorT -1252983604
+define ActiveVentT -1129453144
+define SPoweredVentT 938836756
+define LPoweredVentT -785498334
+define Sensors HASH("ROOM_SENSOR")
+define InputVents HASH("VENT_IN")
+define OutputVents HASH("VENT_OUT")
+define Thermostat HASH("HVAC Thermostat")
+define WaitPeriod 1 # only run checks every period..
+
+alias hvacMode r1
+alias hvacTemp r2
+alias roomTemp r3
+alias roomPres r4
+alias tempDiff r5
+
+loop:
+
+jal poll
+
+# branch to different operational modes...
+beqal hvacMode OfflineMode runOffline
+beqal hvacMode NormalMode runNormal
+beqal hvacMode VaccumMode runVaccum
+
+sleep WaitPeriod
+
+j loop
+
+
+poll:
+# load the current/default mode
+move hvacMode 1 # "normal" is default
+brdns HVACMode 2 # if device set, override default
+l hvacMode HVACMode Setting
+
+# load the current "target" temp
+lbn hvacTemp MitterT Thermostat Setting Average
+add hvacTemp hvacTemp K # convert to kelvin...
+
+# load the current room temp/pressure
+lbn roomTemp SensorT Sensors Temperature Average
+lbn roomPres SensorT Sensors Pressure Average
+
+# take ownership of vents...
+sbn ActiveVentT InputVents Lock 0
+sbn ActiveVentT OutputVents Lock 0
+sbn SPoweredVentT InputVents Lock 0
+sbn SPoweredVentT OutputVents Lock 0
+sbn LPoweredVentT InputVents Lock 0
+sbn LPoweredVentT OutputVents Lock 0
+
+j ra
+
+
+runOffline:
+# shut it all down...
+sbn ActiveVentT InputVents On 0
+sbn ActiveVentT OutputVents On 0
+sbn SPoweredVentT InputVents On 0
+sbn SPoweredVentT OutputVents On 0
+sbn LPoweredVentT InputVents On 0
+sbn LPoweredVentT OutputVents On 0
+j ra
+
+
+runNormal:
+# check atmos pressure...
+slt r0 roomPres TargetPressure
+sbn ActiveVentT InputVents On r0
+sbn SPoweredVentT InputVents On r0
+sbn LPoweredVentT InputVents On r0
+sbn ActiveVentT InputVents Mode 0
+sbn SPoweredVentT InputVents Mode 0
+sbn LPoweredVentT InputVents Mode 0
+
+# check atmos temperature...
+sna r0 hvacTemp roomTemp 0.01
+
+# debugging...
+sub tempDiff hvacTemp roomTemp
+abs tempDiff tempDiff
+s db Setting tempDiff
+
+sbn ActiveVentT OutputVents On r0
+sbn SPoweredVentT OutputVents On r0
+sbn LPoweredVentT OutputVents On r0
+sbn ActiveVentT OutputVents Mode 1
+sbn SPoweredVentT OutputVents Mode 1
+sbn LPoweredVentT OutputVents Mode 1
+
+j ra
+
+
+runVaccum:
+# suck it dry...
+sbn ActiveVentT InputVents On 1
+sbn SPoweredVentT InputVents On 1
+sbn LPoweredVentT InputVents On 1
+sbn ActiveVentT InputVents Mode 1
+sbn SPoweredVentT InputVents Mode 1

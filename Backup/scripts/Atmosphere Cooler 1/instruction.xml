@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>133486815469051904</DateTime>
+  <GameVersion>0.2.4677.21598</GameVersion>
+  <Title>Atmosphere Cooler 1</Title>
+  <Description>​</Description>
+  <Author>Unknown</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions>####################################################
+# Atmosphere Cooler 1
+####################################################
+
+alias WasteTank d0
+alias ToCooling d1
+alias FromCooling d2
+alias ToFiltration d3
+
+alias isCool r1
+alias isHot r2
+alias isFlushing r3
+
+define FlushPumps -321403609
+define PipeAnalyzers 435685051
+define TargetTemp 308  # 35c
+
+
+loop:
+jal checkTemp
+jal updateDevices
+jal updateFiltration
+j loop
+
+
+#---------------------------------------------------
+checkTemp:
+l r0 WasteTank Temperature
+slt isCool r0 TargetTemp
+snez isHot isCool
+sne isHot isCool 1
+
+lb r0 PipeAnalyzers TotalMoles Sum
+sgtz isFlushing r0
+
+#s db Setting isFlushing
+
+j ra
+
+
+#---------------------------------------------------
+updateDevices:
+s ToCooling On isHot
+s FromCooling On isHot
+s ToFiltration On isCool
+
+and r0 isCool isFlushing
+sb FlushPumps On r0
+#s db Setting r0
+
+j ra
+
+
+#---------------------------------------------------
+updateFiltration:
+yield
+j ra</Instructions>
+</InstructionData>

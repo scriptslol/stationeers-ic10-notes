@@ -1,0 +1,15 @@
+
+alias thermostat d0
+
+define K 273.15
+
+
+loop:
+
+l r0 thermostat Setting
+add r0 r0 K
+s db Setting r0
+
+sleep 10
+
+j loop

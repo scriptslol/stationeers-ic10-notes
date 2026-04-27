@@ -1,0 +1,84 @@
+####################################################
+# Atmosphere Cooler 1
+####################################################
+alias dTargetTemp d0
+
+define hMemory -851746783
+define hPumps -321403609
+define hInfos 435685051
+define hValves -1280984102
+
+define HotInfo HASH("HOT_INFO")
+define ColdInfo HASH("COLD_INFO")
+define ColdValve HASH("COLD_VALVE")
+define ColdPurge HASH("COLD_PURGE")
+define GoodValve HASH("GOOD_VALVE")
+define GoodInfo HASH("GOOD_INFO")
+
+define TargetTemp 50 #c
+
+alias isCool r1
+alias isHot r2
+alias hasCoolant r3
+alias targetTemp r4
+
+
+loop:
+jal checkTemp
+yield
+jal updateDevices
+yield
+#jal updateFiltration
+j loop
+
+
+#---------------------------------------------------
+checkTemp:
+
+########
+move r0 0
+brdns dTargetTemp 2
+l r0 dTargetTemp Setting
+select targetTemp r0 r0 TargetTemp
+add targetTemp targetTemp 275.15
+########
+
+lbn r0 hInfos HotInfo Temperature Average
+slt isCool r0 targetTemp
+snez isHot isCool
+sne isHot isCool 1
+
+lbn r0 hInfos ColdInfo TotalMoles Sum
+sgtz hasCoolant r0
+sbn hMemory HASH("M3") Setting hasCoolant
+
+#s db Setting isFlushing
+
+j ra
+
+
+#---------------------------------------------------
+updateDevices:
+#s ToCooling On isHot
+#s FromCooling On isHot
+#s ToFiltration On isCool
+
+sbn hValves ColdValve On isHot
+#sbn hPumps ColdPurge On isHot
+#sbn hValves GoodValve On isCool
+
+sbn hMemory HASH("M1") Setting isHot
+sbn hMemory HASH("M2") Setting isCool
+
+sbn hPumps ColdPurge On hasCoolant
+#and r0 isCool isFlushing
+#sbn hPumps ColdPurge On r0
+#s db Setting r0
+
+j ra
+
+
+#---------------------------------------------------
+updateFiltration:
+yield
+j ra

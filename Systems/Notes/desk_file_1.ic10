@@ -1,0 +1,55 @@
+
+
+define hLED 1944485013
+define hInfo 1036015121
+define hBattery -1388288459
+
+define LEDCharge HASH("LED_Charge")
+define LED20 HASH("LED20")
+define LED40 HASH("LED40")
+define LED60 HASH("LED60")
+define LED80 HASH("LED80")
+define LED100 HASH("LED100")
+
+define DrainInfo HASH("Battery Drain")
+define ChargeInfo HASH("Battery Charge")
+
+define RED 4
+define GREEN 3
+define YELLOW
+
+alias CurrentCharge r1
+alias CurrentDischarge r2
+alias CurrentCapacity r3
+alias CurentPotential r4
+
+loop:
+
+jal poll
+jal update
+
+j loop
+
+poll:
+
+lbn CurrentCharge hInfo ChargeInfo PowerActual Sum
+lbn CurrentDischarge hInfo DrainInfo PowerActual Sum
+lb CurrentCapacity hBattery Maximum Sum
+lbn CurentPotential hInfo DrainInfo PowerPotential 0
+
+alias storageRatio r5
+div storageRatio CurentPotential CurrentCapacity
+
+j ra
+
+update:
+
+# charge rate (red/green)
+sub r0 CurrentCharge CurrentDischarge
+sgt r0 r0 0
+select r0 r0 2 4
+sbn hLED LEDCharge Color r0
+
+# charge lights
+
+j ra

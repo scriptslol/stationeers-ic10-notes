@@ -1,0 +1,36 @@
+####################################################
+# AdHoc Farm Controller
+####################################################
+
+define hButton 491845673
+define hHarvie 958056199
+define hLever 1220484876
+
+define DoButton HASH("DO")
+define PowerLever HASH("POWER")
+define PlantButton HASH("PLANT")
+
+
+loop:
+jal checkPower
+jal checkHarvest
+jal checkPlant
+j loop
+
+
+checkPower:
+lbn r0 hLever PowerLever Open Sum
+sb hHarvie On r0
+j ra
+
+
+checkHarvest:
+lbn r0 hButton DoButton Activate Sum
+sb hHarvie Harvest r0
+j ra
+
+
+checkPlant:
+lbn r0 hButton PlantButton Activate Sum
+sb hHarvie Plant r0
+j ra

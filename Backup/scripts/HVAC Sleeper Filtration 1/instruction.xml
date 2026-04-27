@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>133489017576438590</DateTime>
+  <GameVersion>0.2.4677.21598</GameVersion>
+  <Title>HVAC Sleeper Filtration 1</Title>
+  <Description>​</Description>
+  <Author>Scriptslol</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions>####################################################
+# HVAC Sleeper Filtration 1
+####################################################
+alias regulator d0
+
+define hSleeperVert -1300059018
+define hSleeperHorzR -1812330717
+define hSleeperHorzL 1213495833
+
+define TargetkPa 101
+
+alias activeSleepers r1
+
+
+loop:
+move activeSleepers 0
+
+lb r0 hSleeperVert On Maximum
+breq r0 ninf 2
+add activeSleepers activeSleepers r0
+lb r0 hSleeperHorzR On Maximum
+breq r0 ninf 2
+add activeSleepers activeSleepers r0
+lb r0 hSleeperHorzL On Maximum
+breq r0 ninf 2
+add activeSleepers activeSleepers r0
+
+# clamp to 0-1
+sgtz r0 activeSleepers
+
+s regulator Setting TargetkPa
+s regulator On r0
+s db Mode r0
+
+sleep 5
+
+j loop</Instructions>
+</InstructionData>

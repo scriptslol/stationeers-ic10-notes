@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>133191972279520280</DateTime>
+  <GameVersion>0.2.3773.18265</GameVersion>
+  <Title>Smart Liquid Cooler</Title>
+  <Description>Manages hangar doors surrounding liquid radiators. Maximizing atmosphere exposure to keep liquid as cold as possible
+​</Description>
+  <Author>Unknown</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions>####################################################
+# Smart Liquid Cooler
+####################################################
+
+define OutflowValve -1280984102
+define InflowPump 1310794736
+define InflowInfo 435685051
+define SystemInfo 272136332
+
+alias temp r1
+alias tooHot r2
+alias inflowOpen r3
+alias outflowOpen r4
+
+define targetTemp 293  # ~20c
+
+
+#===================================================
+loop:
+jal updateInfo
+jal updateSystem
+j loop
+
+
+#---------------------------------------------------
+updateInfo:
+
+# check system temperature
+lb temp SystemInfo Temperature Average
+#s db Setting temp
+
+# check inflow pressure
+lb r0 InflowInfo Pressure Average
+
+# determine if the inflow pump should be on
+sgtz inflowOpen r0
+
+# determine if the system is too hot
+sgt tooHot temp targetTemp
+
+# determine if the outflow value is open
+nor outflowOpen inflowOpen tooHot # if (!inflowOpen &amp;&amp; !tooHot)
+
+j ra
+
+
+#---------------------------------------------------
+updateSystem:
+
+sb InflowPump On inflowOpen
+sb OutflowValve On outflowOpen
+
+j ra</Instructions>
+</InstructionData>

@@ -1,0 +1,27 @@
+####################################################
+# Grow Light Controller v1
+####################################################
+
+define AllGrowLights -1758710260
+
+# POTATO
+define LightTime 600
+define SleepTime 200
+
+# TOMATO
+#define LightTime 480
+#define SleepTime 300
+
+# SOYBEAN
+#define LightTime 600
+#define SleepTime 300
+
+loop:
+
+sb AllGrowLights On 1
+sleep LightTime
+
+sb AllGrowLights On 0
+sleep SleepTime
+
+j loop

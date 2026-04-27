@@ -1,0 +1,51 @@
+####################################################
+# Grid Info Controller
+####################################################
+# Devices
+alias dSupplyGridInfo d0  #(cable analyzer)
+alias dConsumerGridInfo d1  #(cable analyzer)
+alias dUNUSED d2
+alias dSupplyWattsSig d3 #(transmitter)
+alias dDemandWattsSig d4 #(transmitter)
+alias dStoredRatioSig d5 #(transmitter)
+# Types
+define hAllLargeBatteries -1388288459
+define hAllSmallBatteries -400115994
+define hMemory -851746783
+# Vars
+alias supplyWatts r1
+alias demandWatts r2
+alias storedWatts r4
+alias capacityWatts r5
+alias storageRatio r6
+
+loop:
+yield
+
+# poll storage stats
+move capacityWatts 0
+lb r0 hAllLargeBatteries Maximum Sum
+add capacityWatts capacityWatts r0
+lb r0 hAllSmallBatteries Maximum Sum
+add capacityWatts capacityWatts r0 # capacity
+l storedWatts dConsumerGridInfo PowerPotential # stored
+#s db Setting capacityWatts
+s db Setting storedWatts
+div storageRatio storedWatts capacityWatts # ratio
+
+# poll producer/consumer stats
+l supplyWatts dSupplyGridInfo PowerActual
+round supplyWatts supplyWatts # supply
+l demandWatts dConsumerGridInfo PowerActual
+round demandWatts demandWatts # demand
+
+# update signal states
+s dSupplyWattsSig Setting supplyWatts
+s dDemandWattsSig Setting demandWatts
+s dStoredRatioSig Setting storageRatio
+
+sbn hMemory HASH("SUPPLY_WATTS_VALUE") Setting supplyWatts
+sbn hMemory HASH("DEMAND_WATTS_VALUE") Setting demandWatts
+sbn hMemory HASH("STORAGE_RATIO_VALUE") Setting storageRatio
+
+j loop

@@ -1,0 +1,95 @@
+alias Memory d0
+alias ItemDial d1
+alias CountDial d2
+alias RequestBtn d3
+alias ItemDisplay d4
+
+define LEDs -815193061
+define Silos 1155865682
+define Vendor -443130773
+
+define RequestCount HASH("Request Count")
+define SiloCount HASH("Silo Count")
+
+
+alias count r1
+alias total r2
+alias storage r3
+alias selectedHash r4
+alias selectedNameHash r5
+alias itemsCount r6
+alias itemSize r7
+
+# load the size of each item
+l r0 Memory LineNumber
+sub r0 r0 1
+s Memory LineNumber r0
+yield
+l itemSize Memory Setting
+
+# load the total number of items
+l r0 Memory LineNumber
+sub r0 r0 3
+s Memory LineNumber r0
+yield
+l r0 Memory Setting
+div itemsCount r0 itemSize
+
+
+loop:
+sub r0 itemsCount 1
+s ItemDial Mode r0
+
+# load the current selection
+l r0 ItemDial Setting
+mul r0 r0 2
+get selectedHash Memory r0
+add r0 r0 1
+get selectedNameHash Memory r0
+s Memory Setting selectedHash
+
+lbn storage Silos selectedNameHash Quantity Average
+lbn r0 Vendor selectedNameHash Quantity Average
+add storage storage r0
+
+sbn LEDs SiloCount Setting storage
+
+# enforce min count of 1
+l r0 CountDial Setting
+brgtz r0 2
+s CountDial Setting 1
+move total r0
+sbn LEDs RequestCount Setting total
+
+l r0 RequestBtn Activate
+
+beqz r0 doNothing
+jal doRequest
+doNothing:
+
+j loop
+
+
+doRequest:
+alias index r0
+move index 0
+move count total
+for:
+j request
+postRequest:
+add index index 1 # index++
+bge index total end
+s db Setting index
+j for
+end:
+sleep 2
+j ra
+
+
+request:
+sbn LEDs RequestCount Setting count
+sb Vendor RequestHash selectedHash
+sleep 1
+sub count count 1
+sbn LEDs RequestCount Setting count
+j postRequest

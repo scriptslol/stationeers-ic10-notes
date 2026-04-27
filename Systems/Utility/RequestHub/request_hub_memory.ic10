@@ -1,0 +1,81 @@
+# Template Stack Loader
+#   sp = index * sizeof(model)
+#   sp += items=max(sizeof(model))
+#   pop... items
+# Model:
+# 1 - Item Hash
+# 2 - Silo Name Hash
+
+push 1724793494 # coal
+push HASH("Coal Silo")
+
+push 1758427767 # iron
+push HASH("Iron Silo")
+
+push -707307845 # copper
+push HASH("Copper Silo")
+
+push -1348105509 # gold
+push HASH("Gold Silo")
+
+push -916518678 # silver
+push HASH("Silver Silo")
+
+push 1103972403 # silicon
+push HASH("Silicon Silo")
+
+push -190236170 # lead
+push HASH("Lead Silo")
+
+push 1830218956 # nickle
+push HASH("Nickle Silo")
+
+push -983091249 # cobalt
+push HASH("Cobalt Silo")
+
+push -1516581844 # uranium
+push HASH("Uranium Silo")
+
+####################################################
+
+push -654790771 # steel
+push HASH("blank")
+
+push 502280180 # electrum
+push HASH("blank")
+
+push 1058547521 # cons
+push HASH("blank")
+
+push -297990285 # invar
+push HASH("blank")
+
+push -82508479 # solder
+push HASH("blank")
+
+####################################################
+
+push 1579842814 # haste
+push HASH("blank")
+
+push 412924554 # astro
+push HASH("blank")
+
+push 156348098 # wasp
+push HASH("blank")
+
+push -787796599 # inconel
+push HASH("blank")
+
+push -1897868623 # stellite
+push HASH("blank")
+####################################################
+
+push 688734890 # tomato soup
+push HASH("Tomato Soup")
+
+####################################################
+
+s db Setting sp
+yield
+s db Setting 2

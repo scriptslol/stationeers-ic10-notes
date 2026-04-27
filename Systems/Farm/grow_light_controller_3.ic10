@@ -1,0 +1,124 @@
+####################################################
+# Grow Light Controller v3
+# + Introduces crop selection via a dial
+# + Optional support for selected hash display
+# + Lifecycle Info Displays
+# + Lifecycle Progress Bar
+# + Lifecycle can now be interrupted
+# + Other actions can now be taken during day/night cycle...
+####################################################
+
+# Types
+define hDial HASH("StructureLogicDial")
+define hDiode HASH("StructureDiodeSlide")
+define hLever HASH("StructureLogicSwitch")
+define hGrowLight HASH("StructureGrowLight")
+define hSmallLED HASH("StructureConsoleLED5")
+define hHashDisplay HASH("StructureConsoleMonitor")
+define hMemory HASH("StructureLogicMemory")
+
+# Entities
+define GrowLever HASH("GROW")
+define CropDial HASH("CROP")
+define CropDisplay HASH("CROP_DISPLAY")
+define LightTimeLED HASH("LIGHT_TIME")
+define DarkTimeLED HASH("DARK_TIME")
+define ProgressBar HASH("PROGRESS")
+define StepLED HASH("STEP")
+
+# Vars
+alias size r1
+alias sizeof r2
+alias length r3
+alias cropHash r4
+alias cropLightTime r5
+alias cropDarkTime r6
+alias lifecycleStep r7
+alias lifecycleProgress r8
+alias inLight r9
+alias currentCycleTime r10
+
+setup:
+clr db
+# <Crops[CropModel]>
+push HASH("ItemPotato")
+push 60 # 10:00
+push 20 # 3:20
+push HASH("ItemSoybean")
+push 60 # 10:00
+push 30 # 5:00
+push HASH("ItemWheat")
+push 60 # 10:00
+push 30 # 5:00
+push HASH("ItemTomato")
+push 48 # 8:00
+push 30 # 5:00
+push HASH("ItemSugarCane")
+push 50 # 8:20
+push 20 # 3:20
+push HASH("ItemCocoaTree")
+push 50 # 8:20
+push 20 # 3:20
+# </Crops[CropModel]>
+move size sp
+move sizeof 3
+div length size sizeof
+sub r0 length 1
+sbn hDial CropDial Mode r0
+sbn hDial CropDial Setting 0
+move inLight 1
+
+loop:
+jal checkDial
+jal updateDisplay
+jal updateCycle
+j loop
+
+checkDial:
+alias index r15
+move index -1
+lbn index hDial CropDial Setting Sum
+beq index ninf ra
+mul index index sizeof
+get cropHash db index
+add index index 1
+get cropLightTime db index
+add index index 1
+get cropDarkTime db index
+select currentCycleTime inLight cropLightTime cropDarkTime
+j ra
+
+updateDisplay:
+sbn hSmallLED LightTimeLED Setting cropLightTime
+sbn hSmallLED DarkTimeLED Setting cropDarkTime
+sbn hDiode ProgressBar Setting lifecycleProgress
+sbn hSmallLED StepLED Setting lifecycleStep
+s db Setting cropHash
+j ra
+
+stepAsLight:
+move currentCycleTime cropLightTime
+j ra
+stepAsDark:
+move currentCycleTime cropDarkTime
+j ra
+
+updateCycle:
+bltz index ra
+lbn r0 hLever GrowLever Open Maximum
+beqz r0 ra
+#beqal inLight 1 stepAsLight
+#beqal inLight 0 stepAsDark
+select currentCycleTime inLight cropLightTime cropDarkTime
+s db Setting inLight
+add lifecycleStep lifecycleStep 1
+div lifecycleProgress lifecycleStep currentCycleTime
+sge r0 lifecycleStep currentCycleTime
+breqz r0 3
+move lifecycleStep 0
+not inLight inLight
+add inLight inLight 2
+min inLight inLight 1
+sb hGrowLight On inLight
+sleep 1
+j loop

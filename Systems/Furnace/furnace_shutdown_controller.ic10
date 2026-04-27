@@ -1,0 +1,41 @@
+####################################################
+# Furnace Shutdown Controller
+####################################################
+
+alias Shutdown d0
+alias Furnace d1
+alias Hopper d2
+
+alias doShutdown r1
+alias isRunning r2
+
+#define MASK %00000000000000000000000000000001
+define MASK -2
+
+s db Setting 999
+loop:
+
+l doShutdown Shutdown Open
+and doShutdown doShutdown MASK
+s db Setting doShutdown
+sleep 5
+
+not isRunning doShutdown
+#mul isRunning isRunning MASK
+s db Setting isRunning
+
+s Furnace On isRunning
+s Hopper On isRunning
+
+bnezal doShutdown shutdownRoutine
+
+j loop
+
+
+shutdownRoutine:
+l r0 Furnace TotalMoles
+sgtz r0 r0
+s Furnace On r0
+mul r0 100 r0
+s Furnace SettingOutput r0
+j ra

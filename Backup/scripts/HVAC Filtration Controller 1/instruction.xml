@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>133486809273246137</DateTime>
+  <GameVersion>0.2.4677.21598</GameVersion>
+  <Title>HVAC Filtration Controller 1</Title>
+  <Description>- provides output pressure safety (30mpa)​</Description>
+  <Author>Scriptslol</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions>####################################################
+# HVAC Filtration Controller
+####################################################
+
+define PressureLimit 30000 # 30MPa
+
+loop:
+
+l r0 db PressureOutput
+slt r0 r0 PressureLimit
+s db Mode r0
+
+j loop</Instructions>
+</InstructionData>

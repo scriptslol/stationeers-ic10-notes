@@ -1,0 +1,123 @@
+####################################################
+# Batch Centrifuge Controller (NOS)
+####################################################
+alias settingsDial d0
+alias remainingDisplay d1
+define AllTheThings 1238905683
+alias cStress r0
+alias pStress r1
+alias currentRPM r2
+alias importCount r3
+alias exportCount r4
+alias unloadSetting r6
+yield
+setup:
+l unloadSetting settingsDial Setting
+bgt unloadSetting 0 initialise
+sleep 10
+j setup
+initialise:
+sb AllTheThings On 1
+sb AllTheThings ClearMemory 1
+sb AllTheThings Open 0
+# Set throttle at 10 until stress reach
+startup:
+lb importCount AllTheThings ImportCount Average
+lb exportCount AllTheThings ExportCount Average
+sub r8 unloadSetting importCount
+s remainingDisplay Setting r8
+sb AllTheThings CombustionLimiter 0
+lb cStress AllTheThings Stress Maximum
+lb currentRPM AllTheThings Rpm Maximum
+slt r5 cStress 25
+mul r5 r5 10
+sb AllTheThings Throttle r5
+bgt currentRPM 350 Phase1 # Next power level at 350
+beqz r5 throttleUp
+j startup
+# Feather throttle till stress stable
+throttleUp:
+lb importCount AllTheThings ImportCount Average
+sub r8 unloadSetting importCount
+s remainingDisplay Setting r8
+lb currentRPM AllTheThings Rpm Maximum
+bgt currentRPM 350 Phase1 # Next power level at 350
+lb pStress AllTheThings Stress Maximum
+yield
+yield
+lb cStress AllTheThings Stress Maximum
+slt r5 cStress pStress
+mul r5 r5 10
+sb AllTheThings Throttle r5
+bgtz r5 throttleDown
+j throttleUp
+# Feather throttle till stress stable
+throttleDown:
+lb currentRPM AllTheThings Rpm Maximum
+bgt currentRPM 350 Phase1 # Next power level at 350
+lb pStress AllTheThings Stress Maximum
+yield
+yield
+lb cStress AllTheThings Stress Maximum
+slt r5 cStress pStress
+mul r5 r5 10
+sb AllTheThings Throttle r5
+bgtz r5 throttleDown
+j throttleDown
+Phase1:
+lb importCount AllTheThings ImportCount Average
+sub r8 unloadSetting importCount
+s remainingDisplay Setting r8
+lb currentRPM AllTheThings Rpm Maximum
+beqz currentRPM initialise # Restart if stopped
+sb AllTheThings CombustionLimiter 0
+sb AllTheThings Throttle 20
+blt currentRPM 550 Phase1 # Move to next power level
+Phase2:
+lb importCount AllTheThings ImportCount Average
+sub r8 unloadSetting importCount
+s remainingDisplay Setting r8
+lb currentRPM AllTheThings Rpm Maximum
+beqz currentRPM initialise # Restart if stopped
+sb AllTheThings CombustionLimiter 10
+sb AllTheThings Throttle 30
+blt currentRPM 660 Phase2 # Move to next power level
+Phase3:
+lb importCount AllTheThings ImportCount Average
+sub r8 unloadSetting importCount
+s remainingDisplay Setting r8
+lb currentRPM AllTheThings Rpm Maximum
+beqz currentRPM initialise # Restart if stopped
+sb AllTheThings CombustionLimiter 20
+sb AllTheThings Throttle 50
+blt currentRPM 760 Phase3 # Move to next power level
+Phase4:
+lb importCount AllTheThings ImportCount Average
+sub r8 unloadSetting importCount
+s remainingDisplay Setting r8
+lb currentRPM AllTheThings Rpm Maximum
+beqz currentRPM initialise # Restart if stopped
+sb AllTheThings CombustionLimiter 30
+sb AllTheThings Throttle 60
+blt currentRPM 870 Phase4 # Move to next power level
+Phase5:
+lb importCount AllTheThings ImportCount Average
+sub r8 unloadSetting importCount
+s remainingDisplay Setting r8
+sb AllTheThings CombustionLimiter 40
+sb AllTheThings Throttle 60
+# Unload ore when unload setting reached
+bge importCount unloadSetting unload
+blt currentRPM 1200 Phase5
+unload:
+lb currentRPM AllTheThings Rpm Maximum
+lb cStress AllTheThings Stress Maximum
+lb exportCount AllTheThings ExportCount Average
+#s exportLed Setting exportCount
+sb AllTheThings On 0
+seqz r7 currentRPM
+sb AllTheThings Open r7 # Open when rpm 0
+breqz r7 2
+sleep 45 # Wait for ore to unload
+bgtz r7 initialise # Restart when unloaded
+j unload

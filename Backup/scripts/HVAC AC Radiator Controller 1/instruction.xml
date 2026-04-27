@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>133486810850895211</DateTime>
+  <GameVersion>0.2.4677.21598</GameVersion>
+  <Title>HVAC AC Radiator Controller 1</Title>
+  <Description>prone to pipe burts if controller loses power​</Description>
+  <Author>Scriptslol</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions>####################################################
+# HVAC AC Radiator Controller 1
+####################################################
+alias coolingInfo d0
+alias wasteInfo d1
+alias coolingValve d2
+alias coolingFlushPump d3
+alias heatingValve d4
+
+define maxTemp 273.15 #305 # 30c
+define minTemp 273.15 #293 # 20c
+
+alias currentTemp r1
+
+
+loop:
+
+l currentTemp wasteInfo Temperature
+
+jal updateCooling
+jal updateHeating
+
+j loop
+
+
+updateCooling:
+
+# check if the waste pipe is too hot
+sgt r0 currentTemp maxTemp
+
+# check if the cooling valve should be open/close
+s coolingValve On r0
+
+# manage the flush pump to prevent bursts
+l r0 coolingInfo TotalMoles
+sgtz r0 r0
+s coolingFlushPump On r0
+
+j ra
+
+
+updateHeating:
+
+# check if the waste pipe is too cold
+slt r0 currentTemp minTemp
+
+s heatingValve On r0
+
+j ra</Instructions>
+</InstructionData>
