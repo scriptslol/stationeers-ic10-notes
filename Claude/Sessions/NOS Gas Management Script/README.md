@@ -1,6 +1,7 @@
 > in the context of Stationeers IC10 code- can you summarize this script?
 > <details>
 > <summary>IC10 Script</summary>
+>
 > ```ic10
 > define Sensor.Name HASH("Outside")
 > define AcVent.Name HASH("AcVent")
