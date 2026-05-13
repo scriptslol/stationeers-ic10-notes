@@ -5,5 +5,7 @@ my go-to approach typically requires more chutes since the default setting of th
 
 <details>
 <summary>example</summary>
+
 ![img_3.png](../../Systems_preterrain/Utility/SiloStorage/img_3.png)
+
 </details>
